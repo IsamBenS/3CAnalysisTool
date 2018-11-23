@@ -106,7 +106,7 @@ server <- function(input, output, session)
                  "beforeEnd",
                  fluidRow
                  (
-                     id="t_1_3"
+                     id="t_1_3", style="width:90%"
                  ))
         
         if(is.null(loaded.project))
@@ -490,47 +490,51 @@ server <- function(input, output, session)
                                      style="margin-left:1.7vw",id=paste0("t_1_3_fr_",f),
                                      box
                                      (
-                                         title=names(current.project$fcs.files)[f],collapsible=TRUE,width=10,collapsed=F,
-                                         id=paste0("t_1_3_",f), 
-                                         tabBox
+                                         width=12,
+                                         box
                                          (
-                                             side="right",width=12,
-                                             tabPanel
+                                             width=2,height="12vh",
+                                             checkboxInput(paste0("t_1_3_",current.project$name,"_",f,"_cbox"), "Select", value = F),
+                                             actionButton(paste0("t_1_3_",current.project$name,"_",f,"_mfile"), "Mapping File")
+                                         ),
+                                         box
+                                         (
+                                             title=names(current.project$fcs.files)[f],collapsible=TRUE,width=10,collapsed=F,
+                                             id=paste0("t_1_3_",f), 
+                                             tabBox
                                              (
-                                                 "Populations",id=paste0("t_1_3_",current.project$name,"_",f,"_1"),
-                                                 fluidRow
+                                                 side="right",width=12,
+                                                 tabPanel
                                                  (
-                                                     id=paste0("t_1_3_",current.project$name,"_",f,"_1_fr"),
-                                                     box
+                                                     "Populations",id=paste0("t_1_3_",current.project$name,"_",f,"_1"),
+                                                     fluidRow
                                                      (
-                                                         id=paste0("t_1_3_",current.project$name,"_",f,"_1_1"), width=3,
-                                                         selectInput(paste0("t_1_3_",current.project$name,"_",f,"_pop_col"), "Population Column", choices=pop.col.sel, 
-                                                                     selected=curr.file.label),
-                                                         selectInput(paste0("t_1_3_",current.project$name,"_",f,"_lab_col"), "Labels Column (Mapping File)", choices=map.col.sel, 
-                                                                     selected=curr.map.label)
-                                                     ),
-                                                     box
-                                                     (
-                                                         id=paste0("t_1_3_",current.project$name,"_",f,"_1_2"), width=9
+                                                         id=paste0("t_1_3_",current.project$name,"_",f,"_1_fr"),
+                                                         box
+                                                         (
+                                                             id=paste0("t_1_3_",current.project$name,"_",f,"_1_1"), width=3,
+                                                             selectInput(paste0("t_1_3_",current.project$name,"_",f,"_pop_col"), "Population Column", choices=pop.col.sel, 
+                                                                         selected=curr.file.label),
+                                                             selectInput(paste0("t_1_3_",current.project$name,"_",f,"_lab_col"), "Labels Column (Mapping File)", choices=map.col.sel, 
+                                                                         selected=curr.map.label)
+                                                         ),
+                                                         box
+                                                         (
+                                                             id=paste0("t_1_3_",current.project$name,"_",f,"_1_2"), width=9
+                                                         )
                                                      )
-                                                 )
-                                             ),
-                                             tabPanel
-                                             (
-                                                 "Previous Analyses", 
-                                                 fluidRow
+                                                 ),
+                                                 tabPanel
                                                  (
-                                                     id=paste0("t_1_3_",current.project$name,"_",f,"_2")
+                                                     "Previous Analyses", 
+                                                     fluidRow
+                                                     (
+                                                         id=paste0("t_1_3_",current.project$name,"_",f,"_2")
+                                                     )
                                                  )
                                              )
                                          )
-                                     ),
-                                     box
-                                     (
-                                         width=2,height="12vh",
-                                         checkboxInput(paste0("t_1_3_",current.project$name,"_",f,"_cbox"), "Select", value = F),
-                                         actionButton(paste0("t_1_3_",current.project$name,"_",f,"_mfile"), "Mapping File")
-                                     )
+                                    )
                                  )
                         )
                     }
@@ -881,6 +885,7 @@ server <- function(input, output, session)
         progress$set(message="ADDING FILES TO PROJECT",value=0)
         on.exit(progress$close())
         shinyjs::disable("t_1_2_add")
+        invalid.files <- c()
         
         if( !is.null(current.project$name) )
         {
@@ -896,21 +901,8 @@ server <- function(input, output, session)
                     l <- length(f)
                     x <- NULL
                     nx <- list()
-                    if(grepl("csv",f))
-                    {
-                        x <- as.matrix(read.csv(f))
-                        x <- flowFrame(x)
-                        lapply(1:ncol(x@exprs), function(i)
-                        {
-                            d <- x@description[[paste0("$P",i,"S")]]
-                            if(is.null(d) || is.na(d) || d == "" || d == " " || d == "NA" || d == "<NA>" || d == "'<NA>'")
-                            {
-                                d <- colnames(x)[i]
-                            }
-                            nx[[i]] <<- d
-                        })
-                    }
-                    else
+                    
+                    if(grepl("fcs",f))
                     {
                         x <- read.FCS(f,emptyValue = FALSE)
                         nx <- list()
@@ -924,16 +916,46 @@ server <- function(input, output, session)
                             nx[[i]] <<- d
                         })
                     }
+                    # else
+                    # {
+                    #     x <- as.matrix(read.csv(f))
+                    #     x <- flowFrame(x)
+                    #     lapply(1:ncol(x@exprs), function(i)
+                    #     {
+                    #         d <- x@description[[paste0("$P",i,"S")]]
+                    #         if(is.null(d) || is.na(d) || d == "" || d == " " || d == "NA" || d == "<NA>" || d == "'<NA>'")
+                    #         {
+                    #             d <- colnames(x)[i]
+                    #         }
+                    #         nx[[i]] <<- d
+                    #     })
+                    # }
                     if( is.null(current.project$fcs.files) )
                     {
                         current.project$fcs.files <- list()
                         current.project$fcs.files.ui.colnames <- list()
                     }
-                    current.project$fcs.files[[paste0(basename(substr(f,1,nchar(f)-4)),"_",length(current.project$fcs.files))]] <<- x
-                    current.project$fcs.files.ui.colnames[[paste0(basename(substr(f,1,nchar(f)-4)),"_",length(current.project$fcs.files))]] <<- nx
-                    current.project$modified.files[[paste0(basename(substr(f,1,nchar(f)-4)),"_",length(current.project$fcs.files))]] <- TRUE
-                    current.project$mapping.files[[paste0(basename(substr(f,1,nchar(f)-4)),"_",length(current.project$fcs.files))]] <- NA
-
+                    
+                    if(is.defined(x))
+                    {
+                        tmp.list <- get.keywords.with.keypart.FCS(x, "CLMETH")
+                        if(!is.null(tmp.list) && length(tmp.list)>0)
+                        {
+                            current.project$fcs.files[[paste0(basename(substr(f,1,nchar(f)-4)),"_",length(current.project$fcs.files))]] <<- x
+                            current.project$fcs.files.ui.colnames[[paste0(basename(substr(f,1,nchar(f)-4)),"_",length(current.project$fcs.files))]] <<- nx
+                            current.project$modified.files[[paste0(basename(substr(f,1,nchar(f)-4)),"_",length(current.project$fcs.files))]] <- TRUE
+                            current.project$mapping.files[[paste0(basename(substr(f,1,nchar(f)-4)),"_",length(current.project$fcs.files))]] <- NA
+                        }
+                        else
+                        {
+                            invalid.files <<- c(invalid.files, f)
+                        }
+                    }
+                    progress$inc(1/length(temp.files), detail = paste0("File ", f, " added"))
+                })
+                
+                if(length(current.project$fcs.files)>0)
+                {
                     computed.values$purity.matrix.annot <- list()
                     computed.values$purity.matrix.clust <- list()
                     computed.values$FG.matrices.annot <- list()
@@ -943,9 +965,17 @@ server <- function(input, output, session)
                     computed.values$pop.sizes <- list()
                     computed.values$clust.sizes <- list()
                     computed.values$annot.sizes <- list()
-                    
-                    progress$inc(1/length(temp.files), detail = paste0("File ", f, " added"))
-                })
+                }
+                
+                if(length(invalid.files)>0)
+                {
+                    tmp.txt <- ""
+                    for(txt in invalid.files)
+                    {
+                        tmp.txt <- paste0(txt,"\n",tmp.txt)
+                    }
+                    showNotification(paste("THE FOLLOWING FILES ARE NOT VALID: \n",tmp.txt), duration = 0, type="warning")
+                }
             }
         }
         
@@ -1660,7 +1690,11 @@ server <- function(input, output, session)
                 pot.run <- which(t.sizes==max(t.sizes))[[1]]
             }
             
-            ordered.table <- as.matrix(ordered.table[unlist(computed.values$fixed.parameters.ids[[pot.run]]),])
+            table.ids <- sapply(computed.values$fixed.parameters.ids[[pot.run]], function(id.num)
+            {
+                return(as.integer(which(as.character(ordered.table[,1]) == as.character(id.num))))
+            })
+            ordered.table <- as.matrix(ordered.table[unlist(table.ids),])
             if(ncol(ordered.table)<2)
             {
                 ordered.table <- t(ordered.table)
@@ -1696,6 +1730,7 @@ server <- function(input, output, session)
                     {
                         #COMPUTE PLOTS POINTS-------------------------------------------------------------
                         generate.ordered.table()
+                        f.name <- names(current.project$fcs.files)[as.integer(input[["t_3_3_2_fileSel"]])]
                         
                         runs.columns <- as.integer(computed.values$ordered.table[,1])
                         
@@ -1725,7 +1760,7 @@ server <- function(input, output, session)
                                 
                                 list.pop.points[[pop.ids[[j]]]] <- c(unlist(list.pop.points[[pop.ids[[j]]]]), F.max)
                                 list.pop.points.xval[[pop.ids[[j]]]] <- c(unlist(list.pop.points.xval[[pop.ids[[j]]]]), 
-                                                                          as.numeric(computed.values$ordered.table[i,2]))
+                                                                               as.numeric(computed.values$ordered.table[i,2]))
                             }
                             if(!is.null(null.pop.ids))
                             {
@@ -1738,7 +1773,7 @@ server <- function(input, output, session)
                                     
                                     list.pop.points[[null.pop.ids[[j]]]] <- c(unlist(list.pop.points[[null.pop.ids[[j]]]]), 0)
                                     list.pop.points.xval[[null.pop.ids[[j]]]] <- c(unlist(list.pop.points.xval[[null.pop.ids[[j]]]]), 
-                                                                                   as.numeric(computed.values$ordered.table[i,2]))
+                                                                              as.numeric(computed.values$ordered.table[i,2]))
                                 }
                             }
                         }
@@ -1747,6 +1782,8 @@ server <- function(input, output, session)
                         #PLOT F SCORES---------------------------------------------------------------------------------------------------
                         if(length(list.pop.points)>1)
                         {
+                            View(list.pop.points)
+                            View(list.pop.points.xval)
                             max.height <- length(list.pop.points)+0.5
                             ordered.table <- as.matrix(computed.values$ordered.table)
                             values.range <- c(min(as.numeric(ordered.table[,2]))-1, max(as.numeric(ordered.table[,2]))+1)
@@ -1788,8 +1825,8 @@ server <- function(input, output, session)
                             tmp.run.name <- paste0(tmp.run.name, "\n",names(tmp.run.parameters)[length(tmp.run.parameters)], "=", 
                                                    tmp.run.parameters[[length(tmp.run.parameters)]])
 
-                            #PLOT F SCORES---------------------------------------------------------------------------------------------------
-                            jpeg(outfile, width=720, height=480)
+                            #PLOT F SCORES---------------------------------------------------------------------------
+                            jpeg(outfile, width=960, height=480)
                             draw.F.score.barplot(F.mat, pop.names, pop.sizes, 
                                                  plot.title = tmp.run.name)
                             dev.off()
@@ -1829,7 +1866,49 @@ server <- function(input, output, session)
                 {
                     if(is.defined(input[["t_3_3_2_methodSel"]]) && input[["t_3_3_2_methodSel"]]!="" && input[["t_3_3_2_methodSel"]]!=" ")
                     {
-                        update.runs.list("t_3_3_2")
+                        current.section <- "t_3_3_2"
+                        if(!is.null(current.section))
+                        {
+                            fcs <- current.project$fcs.files[[as.integer(input[[paste0(current.section,"_fileSel")]])]]
+                            if(is.defined(fcs))
+                            {
+                                analyses.list <- FPH.retrieve.clusters.data.from.file(fcs)
+                                analyses.algorithms <- analyses.list[[1]]
+                                analyses.parameters <- analyses.list[[3]]
+                                current.algo <- analyses.algorithms[[as.integer(input[[paste0(current.section,"_methodSel")]])]]
+                                current.params <- analyses.parameters[[as.integer(input[[paste0(current.section,"_methodSel")]])]]
+                                
+                                available.runs <- 1:length(current.algo)
+                                ids.list <- 1:length(current.algo)
+                                if(!is.null(computed.values$fixed.parameters.ids) && is.defined(input$t_3_3_2_FixedparamSel) &&
+                                   input$t_3_3_2_FixedparamSel != "")
+                                {
+                                    pot.run <- input$t_3_3_2_FixedparamSel
+                                    available.runs <- 1:length(computed.values$fixed.parameters.ids[[as.numeric(pot.run)]])
+                                    ids.list <- as.numeric(unlist(computed.values$fixed.parameters.ids[[as.numeric(pot.run)]]))
+                                }
+                                names(available.runs) <- available.runs
+                                for(current.algo.run.id in 1:length(ids.list))
+                                {
+                                    current.algo.run <- current.algo[[ids.list[[current.algo.run.id]]]]
+                                    tmp.run.name <- paste0(strsplit(current.algo.run,"__", fixed = T)[[1]][2],": ")
+                                    tmp.run.parameters <- extract.run.parameters(current.algo.run)
+                                    if(length(tmp.run.parameters)>0)
+                                    {
+                                        for(par.id in 1:length(tmp.run.parameters))
+                                        {
+                                            tmp.run.name <- paste0(tmp.run.name, names(tmp.run.parameters)[par.id], "=", tmp.run.parameters[[par.id]], ", ")
+                                        }
+                                    }
+                                    names(available.runs)[current.algo.run.id] <- tmp.run.name 
+                                }
+                                
+                                if(is.defined(available.runs))
+                                {
+                                    updateSelectInput(session, paste0(current.section,"_runSel"), choices=available.runs, selected=available.runs[[1]])
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -2211,9 +2290,9 @@ server <- function(input, output, session)
                                 outer.clusters <- 1:length(associated.pop)
                                 outer.clusters <- outer.clusters[unlist(which(outer.clusters%not.in%selected.clusters))]
 
-                                cl.table.below <- matrix(NA, nrow=length(outer.clusters), ncol=5)
+                                cl.table.below <- matrix(NA, nrow=length(outer.clusters), ncol=6)
                                 colnames(cl.table.below) <- c("BELOW THRESHOLD","precision","Relative Size (population)", 
-                                                              "Relative Size (file)", "Population")
+                                                              "Relative Size (file)", "Population", "Events")
                                 if(length(outer.clusters)>0)
                                 {
                                     sapply(1:length(outer.clusters), function(i)
@@ -2230,6 +2309,7 @@ server <- function(input, output, session)
                                         cl.table.below[i,3] <<- paste0(cl.size.pop, " %")
                                         cl.table.below[i,4] <<- paste0(cl.size.file, " %")
                                         cl.table.below[i,5] <<- pop.names[[pop.id]]
+                                        cl.table.below[i,6] <<- clust.sizes[[cl.id]]
 
                                     })
                                 }
@@ -2241,9 +2321,9 @@ server <- function(input, output, session)
                                 outer.clusters <- 1:length(associated.pop)
                                 outer.clusters <- outer.clusters[unlist(which(outer.clusters%not.in%selected.clusters))]
 
-                                cl.table.above <- matrix(NA, nrow=length(selected.clusters), ncol=5)
+                                cl.table.above <- matrix(NA, nrow=length(selected.clusters), ncol=6)
                                 colnames(cl.table.above) <- c("ABOVE THRESHOLD","precision","Relative Size (population)", 
-                                                              "Relative Size (file)", "Population")
+                                                              "Relative Size (file)", "Population", "Events")
                                 if(length(selected.clusters)>0)
                                 {
                                     sapply(1:length(selected.clusters), function(i)
@@ -2260,6 +2340,7 @@ server <- function(input, output, session)
                                         cl.table.above[i,3] <<- paste0(cl.size.pop, " %")
                                         cl.table.above[i,4] <<- paste0(cl.size.file, " %")
                                         cl.table.above[i,5] <<- pop.names[[pop.id]]
+                                        cl.table.above[i,6] <<- clust.sizes[[pop.id]]
                                     })
                                 }
                                 pur.thresh <- isolate(as.numeric(input[["t_3_3_4_purityByAnnot_slider"]]))
@@ -2362,7 +2443,9 @@ server <- function(input, output, session)
     output$t_3_3_4_exportButton <- downloadHandler(
         filename = function()
         {
-            paste0(fcs.out.name,".fcs")
+            f.id <- as.integer(isolate(input[["t_3_3_4_fileSel"]]))
+            f.name <- names(current.project$fcs.files)[f.id]
+            paste0(f.name,".fcs")
         },
         content = function(file)
         {

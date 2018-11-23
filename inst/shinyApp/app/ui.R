@@ -1,8 +1,3 @@
-library(shiny)
-library(shinydashboard)
-library(shinyjs)
-library(DT)
-
 ui <- dashboardPage(
     
     dashboardHeader
@@ -53,7 +48,7 @@ ui <- dashboardPage(
 					),
                     fluidRow
                     (
-                        id="t_1_3"
+                        id="t_1_3", style="width:90%"
                     )
                 )
             ),
@@ -78,55 +73,6 @@ ui <- dashboardPage(
                             id="t_3_3",width=12,
                             tabPanel
                             (
-                                "Annotations Visualization",id="t_3_3_1",
-                                box
-                                (
-                                    width=6,
-                                    selectInput("t_3_3_1_fileSel", "Select file", choices = NULL, selected = NULL),
-                                    actionButton("t_3_3_1_plotButton", "Plot")
-                                ),
-                                box
-                                (
-                                    width=6,
-                                    selectInput("t_3_3_1_methodSel", "Select Algorithm", choices = NULL, selected = NULL),
-                                    selectInput("t_3_3_1_runSel", "Select Run", choices = NULL, selected = NULL)
-                                ),
-                                fluidRow
-                                (
-                                    id="t_3_3_1_fr",
-                                    box
-                                    (
-                                        id="t_3_3_1_ref",
-                                        imageOutput("t_3_3_1_refPlot"),
-                                        div
-                                        (
-                                            selectInput("t_3_3_1_refPopSel", "Select Populations", choices=NULL, multiple = T),
-                                            style="margin-top:10%"
-                                        ),
-                                        width=5
-                                    ),
-                                    box
-                                    (
-                                        id="t_3_3_1_test",
-                                        imageOutput("t_3_3_1_testPlot"),
-                                        div
-                                        (
-                                            selectInput("t_3_3_1_testPopSel", "Select Annotated Groups", choices=NULL, multiple = T),
-                                            style="margin-top:10%"
-                                        ),
-                                        width=5
-                                    ),
-                                    box
-                                    (
-                                        id="t_3_3_1_markers",
-                                        selectInput("t_3_3_1_m1", "Marker 1", choices = NULL),
-                                        selectInput("t_3_3_1_m2", "Marker 2", choices = NULL),
-                                        width=2
-                                    )
-                                )
-                            ),
-                            tabPanel
-                            (
                                 "F score details",id="t_3_3_2",
                                 box
                                 (
@@ -149,20 +95,6 @@ ui <- dashboardPage(
                                         id="t_3_3_2_scoreByPOP", width=7,style="overflow:auto;height:65vh;max-height:75vh",
                                         selectInput("t_3_3_2_runSel", "Select run", choices = NULL, selected = NULL),
                                         imageOutput("t_3_3_2_runSelPlot")
-                                    )
-                                )
-                            ),
-                            tabPanel
-                            (
-                                "Summarize table",id="t_3_3_3",
-                                actionButton("t_3_3_3_plotButton", "Plot"),
-                                fluidRow
-                                (
-                                    id="t_3_3_3_fr",
-                                    box
-                                    (
-                                        width=12, style="overflow:auto",
-                                        tableOutput("t_3_3_3_table")
                                     )
                                 )
                             ),
@@ -220,6 +152,69 @@ ui <- dashboardPage(
                                     (
                                         DT::dataTableOutput("t_3_3_4_populationsDetails"),
                                         style="height:40vh;overflow:auto", collapsible=T
+                                    )
+                                )
+                            ),
+                            tabPanel
+                            (
+                                "Annotations Visualization",id="t_3_3_1",
+                                box
+                                (
+                                    width=6,
+                                    selectInput("t_3_3_1_fileSel", "Select file", choices = NULL, selected = NULL),
+                                    actionButton("t_3_3_1_plotButton", "Plot")
+                                ),
+                                box
+                                (
+                                    width=6,
+                                    selectInput("t_3_3_1_methodSel", "Select Algorithm", choices = NULL, selected = NULL),
+                                    selectInput("t_3_3_1_runSel", "Select Run", choices = NULL, selected = NULL)
+                                ),
+                                fluidRow
+                                (
+                                    id="t_3_3_1_fr",
+                                    box
+                                    (
+                                        id="t_3_3_1_ref",
+                                        imageOutput("t_3_3_1_refPlot"),
+                                        div
+                                        (
+                                            selectInput("t_3_3_1_refPopSel", "Select Populations", choices=NULL, multiple = T),
+                                            style="margin-top:10%"
+                                        ),
+                                        width=5
+                                    ),
+                                    box
+                                    (
+                                        id="t_3_3_1_test",
+                                        imageOutput("t_3_3_1_testPlot"),
+                                        div
+                                        (
+                                            selectInput("t_3_3_1_testPopSel", "Select Annotated Groups", choices=NULL, multiple = T),
+                                            style="margin-top:10%"
+                                        ),
+                                        width=5
+                                    ),
+                                    box
+                                    (
+                                        id="t_3_3_1_markers",
+                                        selectInput("t_3_3_1_m1", "Marker 1", choices = NULL),
+                                        selectInput("t_3_3_1_m2", "Marker 2", choices = NULL),
+                                        width=2
+                                    )
+                                )
+                            ),
+                            tabPanel
+                            (
+                                "Summarize table",id="t_3_3_3",
+                                actionButton("t_3_3_3_plotButton", "Plot"),
+                                fluidRow
+                                (
+                                    id="t_3_3_3_fr",
+                                    box
+                                    (
+                                        width=12, style="overflow:auto",
+                                        tableOutput("t_3_3_3_table")
                                     )
                                 )
                             )
