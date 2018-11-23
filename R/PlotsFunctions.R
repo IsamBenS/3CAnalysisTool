@@ -25,19 +25,22 @@ draw.cumulated.filled.plots <- function(points.list, points.list.xvalues, max.he
     qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
     plt.colors = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
     
-    plot(
-        ggplot(df, aes(x=as.numeric(as.character(x.val)))) + 
+    output.plot <- ggplot(df, aes(x=as.numeric(as.character(x.val))))
+    for(i in 1:length(x.values))
+    {
+        output.plot <- output.plot + geom_vline(aes(alpha=0.4), xintercept = as.numeric(x.values[[i]]))
+    }
+    output.plot <-  output.plot + 
         geom_area(aes(y=as.numeric(as.character(y.val)), fill=Population), position="stack") +
         scale_fill_manual("Annotations", values=alpha(plt.colors[1:nrow(mat)], 0.7)) +
-        geom_point(aes(y=as.numeric(as.character(y.val))), position="stack", colour="red") +
         ylim(0,length(points.list)+1) +
         xlab(x.lab) +
         ylab(y.lab) +
         geom_hline(yintercept=length(points.list)) + 
         annotate("text", min(as.numeric(x.values)), length(points.list)+1, label="Max value") + 
         labs(title = paste0("Cumulated F-score for parameter ",x.lab)) +
-        theme_bw() 
-    )
+        theme_bw()
+    plot(output.plot)
     
 }
 
@@ -92,7 +95,7 @@ draw.F.score.barplot <- function(F.score.matrix, populations.names, populations.
                 coord_flip() +
                 theme_bw() 
     
-    ggplot2.multiplot(fsco.plot, freq.plot, cols=2)
+    ggplot2.multiplot(freq.plot, fsco.plot, cols=2)
 }
 
 
