@@ -1782,8 +1782,7 @@ server <- function(input, output, session)
                         #PLOT F SCORES---------------------------------------------------------------------------------------------------
                         if(length(list.pop.points)>1)
                         {
-                            View(list.pop.points)
-                            View(list.pop.points.xval)
+                            browser()
                             max.height <- length(list.pop.points)+0.5
                             ordered.table <- as.matrix(computed.values$ordered.table)
                             values.range <- c(min(as.numeric(ordered.table[,2]))-1, max(as.numeric(ordered.table[,2]))+1)
