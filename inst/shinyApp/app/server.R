@@ -7,12 +7,22 @@ library(parallel)
 library(doSNOW)
 library(ggplot2)
 
+
+source("../EfficiencyAnalysis.R")
+source("../FilePreHandling.R")
+source("../MethodsHandling.R")
+source("../ModifyFCS.R")
+source("../StatisticalAnalysis.R")
+source("../TimeAnalysis.R")
+source("../Runsfunctions.R")
+source("../PlotsFunctions.R")
+source("../RAMConsumption.R")
+
 server <- function(input, output, session)
 {
-    "%not.in%" <- Negate("%in%")
     useShinyjs()
     # options(shiny.reactlog=TRUE) 
-    
+
     #======================================================================================================================
     #======================REACTIVE VALUES=================================================================================
     #======================================================================================================================
@@ -56,7 +66,7 @@ server <- function(input, output, session)
     )
     
     env.var <- reactiveValues(
-        tool.wd = system.file("shinyApp", "app", package = "AnalysisTool")
+        tool.wd = getwd()
     )
     
     write.enriched.FCS <- function(fcs, fcs.path)
@@ -1782,7 +1792,6 @@ server <- function(input, output, session)
                         #PLOT F SCORES---------------------------------------------------------------------------------------------------
                         if(length(list.pop.points)>1)
                         {
-                            browser()
                             max.height <- length(list.pop.points)+0.5
                             ordered.table <- as.matrix(computed.values$ordered.table)
                             values.range <- c(min(as.numeric(ordered.table[,2]))-1, max(as.numeric(ordered.table[,2]))+1)
