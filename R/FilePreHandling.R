@@ -33,9 +33,9 @@ FPH.get.file.clusters <- function(fcs.file, clust.col, maxclust=5000)
         nmb.clust <- maxclust
     }
     
-    clusters.data <- lapply(1:nmb.clust, function(c)
+    clusters.data <- lapply(1:nmb.clust, function(cl)
     {
-        events.id <- which(f.mat[,clust.dim] %in% clust.names[c])
+        events.id <- which(f.mat[,clust.dim] == clust.names[cl])
         nmb.events <- length(events.id)
         
         out.list <- NULL
@@ -45,6 +45,7 @@ FPH.get.file.clusters <- function(fcs.file, clust.col, maxclust=5000)
         }
         return(out.list)
     })
+    names(clusters.data) <- clust.names
     clusters.data[ sapply(clusters.data, is.null) ] <- NULL
     return(clusters.data)
 }
