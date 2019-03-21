@@ -11,7 +11,7 @@ server <- function(input, output, session)
 {
     useShinyjs()
     # options(shiny.reactlog=TRUE) 
-
+    
     #======================================================================================================================
     #======================REACTIVE VALUES=================================================================================
     #======================================================================================================================
@@ -390,13 +390,13 @@ server <- function(input, output, session)
                             mat <- matrix(1:length(FPH.get.file.clusters(current.project$fcs.files[[f]],
                                                                          as.numeric(input[[paste0("t_1_3_",current.project$name,"_",f,"_pop_col")]]))),
                                           ncol=1)
-                            new.nmb.row <- length(unique(current.project$fcs.files[[f]]@exprs[,as.numeric(input[[paste0("t_1_3_",current.project$name,"_",f,"_pop_col")]])]))
-                            pop.written.names <- sapply(1:new.nmb.row, function(cl)
+                            new.nmb.row <- unique(current.project$fcs.files[[f]]@exprs[,as.numeric(input[[paste0("t_1_3_",current.project$name,"_",f,"_pop_col")]])])
+                            pop.written.names <- sapply(new.nmb.row, function(cl)
                             {
                                 return(input[[paste0("t_1_3_",current.project$name,"_",f,"_1_pop_",cl)]])
                             })
 
-                            mat <- cbind(mat, pop.written.names)
+                            mat <- cbind(mat, pop.written.names[order(new.nmb.row)])
                             colnames(mat) <- c("popID","popName")
                             current.project$mapping.files[[names(current.project$fcs.files)[f]]] <<- mat
                             write.csv(current.project$mapping.files[[names(current.project$fcs.files)[f]]],paste0(env.var$tool.wd,"/Projects/",
@@ -797,9 +797,16 @@ server <- function(input, output, session)
                                    is.defined(input[[paste0("t_1_3_",current.project$name,"_",f,"_lab_col")]]) &&
                                    input[[paste0("t_1_3_",current.project$name,"_",f,"_lab_col")]]!="")
                                 {
-                                    t <- FPH.get.labels.from.mapping.file(current.project$mapping.files[[f.name]],
+                                    tmp.lab <- FPH.get.labels.from.mapping.file(current.project$mapping.files[[f.name]],
                                                                           input[[paste0("t_1_3_",current.project$name,"_",f,"_lab_col")]])
-                                    map.labels <- t[map.labels]
+                                    if(length(map.labels)==length(tmp.lab))
+                                    {
+                                        map.labels <- tmp.lab
+                                    }
+                                    else
+                                    {
+                                        map.labels <- tmp.lab[map.labels]
+                                    }
                                 }
                             }
     
