@@ -347,8 +347,8 @@ server <- function(input, output, session)
                             input[[paste0("t_1_3_",current.project$name,"_",f,"_lab_col")]] != "" &&
                             input[[paste0("t_1_3_",current.project$name,"_",f,"_lab_col")]] != " ")
                         {
-                            new.nmb.row <- length(unique(current.project$fcs.files[[f]]@exprs[,as.numeric(input[[paste0("t_1_3_",current.project$name,"_",f,"_pop_col")]])]))
-                            pop.written.names <- sapply(1:new.nmb.row, function(cl)
+                            new.nmb.row <- unique(current.project$fcs.files[[f]]@exprs[,as.numeric(input[[paste0("t_1_3_",current.project$name,"_",f,"_pop_col")]])])
+                            pop.written.names <- sapply(new.nmb.row, function(cl)
                             {
                                 return(input[[paste0("t_1_3_",current.project$name,"_",f,"_1_pop_",cl)]])
                             })
@@ -359,13 +359,14 @@ server <- function(input, output, session)
 
                             if(new.nmb.row != nrow(current.project$mapping.files[[f]]))
                             {
-                                current.project$mapping.files[[f]] <<- matrix(nrow=new.nmb.row,ncol=1)
-                                mat <- matrix(1:new.nmb.row, ncol=1)
+                                current.project$mapping.files[[f]] <<- matrix(nrow=length(new.nmb.row),ncol=1)
+                                mat <- matrix(1:length(new.nmb.row), ncol=1)
                                 mat <- cbind(mat, mat)
                                 colnames(mat) <- c("popID","popName")
                                 current.project$mapping.files[[f]] <<- mat
                             }
-                            current.project$mapping.files[[f]][,as.integer(input[[paste0("t_1_3_",current.project$name,"_",f,"_lab_col")]])] <<- pop.written.names
+                            current.project$mapping.files[[f]][,as.integer(input[[paste0("t_1_3_",current.project$name,"_",f,"_lab_col")]])] <<- 
+                                pop.written.names[order(new.nmb.row)]
                         }
                         else
                         {
@@ -789,7 +790,7 @@ server <- function(input, output, session)
                             f.name <- names(current.project$fcs.files)[f]
                             fcs.clusters <- FPH.get.file.clusters(fcs,as.integer(input[[paste0("t_1_3_",current.project$name,"_",f,"_pop_col")]]))
                             nmb.ev <- sum(sapply(1:length(fcs.clusters),function(cl){return(fcs.clusters[[cl]][[1]])}))
-                            map.labels <- 1:length(fcs.clusters)
+                            map.labels <- sort(as.numeric(names(fcs.clusters)))
                             if(is.defined(current.project$mapping.files))
                             {
                                 if(is.defined(input[[paste0("t_1_3_",current.project$name,"_",f,"_lab_col")]]) &&
@@ -798,7 +799,7 @@ server <- function(input, output, session)
                                 {
                                     t <- FPH.get.labels.from.mapping.file(current.project$mapping.files[[f.name]],
                                                                           input[[paste0("t_1_3_",current.project$name,"_",f,"_lab_col")]])
-                                    map.labels[1:length(t)] <- t
+                                    map.labels <- t[map.labels]
                                 }
                             }
     
@@ -812,16 +813,18 @@ server <- function(input, output, session)
                             )
                             if(length(fcs.clusters)<50)
                             {
+                                clusters.order <- order(as.numeric(names(fcs.clusters)))
                                 lapply(1:length(fcs.clusters), function(cl)
                                 {
+                                    cl.name <- as.numeric(names(fcs.clusters)[[clusters.order[[cl]]]])
                                     insertUI(paste0("#t_1_3_",current.project$name,"_",f,"_1_2_fr"),
                                              "beforeEnd",
-                                             textInput(paste0("t_1_3_",current.project$name,"_",f,"_1_pop_",cl),
-                                                       paste0("Population ",cl," - Label:"),
+                                             textInput(paste0("t_1_3_",current.project$name,"_",f,"_1_pop_",cl.name),
+                                                       paste0("Population ",cl.name," - Label:"),
                                                        value = map.labels[[cl]],
                                                        width = "70%")
                                     )
-                                    progress$inc(1/length(fcs.clusters), detail=paste0("Population ", cl, " retrieved"))
+                                    progress$inc(1/length(fcs.clusters), detail=paste0("Population ", cl.name, " retrieved"))
                                 })
                             }
                         }
@@ -1232,7 +1235,7 @@ server <- function(input, output, session)
                             pop.real.ID <- as.integer(unique(fcs@exprs[pop.ev,pop.col]))
                             ta <- table(fcs@exprs[,pop.col])
                             pop.real.ID <- as.integer(which(as.integer(names(ta))==pop.real.ID)[[1]])
-                            
+                            print(pop.real.ID)
                             names(pop.sizes)[i] <- current.project$mapping.files[[f.id]][pop.real.ID,2]
                         }
                         
@@ -1806,7 +1809,6 @@ server <- function(input, output, session)
                             F.mat <- computed.values$FG.matrices.annot[[f.name]][[as.integer(input[["t_3_3_2_methodSel"]])]][[as.integer(input[["t_3_3_2_runSel"]])]][[1]]
                             pop.sizes <- computed.values$pop.sizes[[f.name]][[as.integer(input[["t_3_3_2_methodSel"]])]][[as.integer(input[["t_3_3_2_runSel"]])]]
                             pop.names <- names(pop.sizes)
-                            
                             analyses.list <- FPH.retrieve.clusters.data.from.file(fcs)
                             analyses.run <- analyses.list[[1]][[as.integer(input[["t_3_3_2_methodSel"]])]][[as.integer(input[["t_3_3_2_runSel"]])]]
                             
