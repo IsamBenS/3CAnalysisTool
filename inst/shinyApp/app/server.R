@@ -55,7 +55,7 @@ server <- function(input, output, session)
     )
     
     env.var <- reactiveValues(
-        tool.wd = system.file("shinyApp", "app", package = "AnalysisTool"),
+        tool.wd = system.file("shinyApp", "app", package = "AnalysisTool")
     )
     
     write.enriched.FCS <- function(fcs, fcs.path)
